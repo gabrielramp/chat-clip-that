@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dark-gray: #444444;
+  --darkest-gray: #1E1E1E;
+  --main-purple: #7D00DF;
+  --dark-purple: #320059;
+}
+html{
+
+}
+/* Scrollbar width */
+::-webkit-scrollbar {
+  width: 15px;
+}
+
+/* Scrollbar track */
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0);
+}
+
+/* Scroll bar itself */
+::-webkit-scrollbar-thumb {
+  background: lightgray;
+  border-radius: 10px;
+}
+
+/* Scrollbar hover */
+::-webkit-scrollbar-thumb:hover {
+  background: white;
+}
+
+/* Enables smooth scroll for navigation */
+html {
+  scroll-behavior: smooth;
+}
+
+
+.App {
+  text-align: center;
+}
+
+body {
+  background: linear-gradient(135deg, var(--darkest-gray), var(--main-purple) 175%);
+  background-size: contain;
+  background-attachment: fixed;
+  height: 100vh;
+  width: 100%;
+  color: white;
+  overflow-x: hidden;
+  margin: 0px;
+  padding: 0px;
+  scrollbar-gutter: stable both-edges !important; 
+}
+
+nav {
+  width: 60vw;
+  height: 7.5vh;
+  /* background-color: pink; */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+nav a {
+  width: 12%;
+  height: 100%;
+  margin-left: 3.5%;
+  margin-right: 3.5%;
+  padding-left: 2%;
+  padding-right: 2%;
+  display: inline-block;
+  text-decoration: none;
+  color: white;
+  /* background-color: red; */
+}
+
+nav a :hover {
+  background-color: white;
+  color: var(--dark-purple);
+}
+
+a :visited {
+  color: white !important;
+}
+
+.horizontalButton {
+  position:sticky;
+  background-color: cyan;
+  bottom:50%;
+}
+
+button{
+  background-color: chartreuse;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
