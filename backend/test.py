@@ -6,6 +6,9 @@ from effects import add_vine_boom_effect, add_spin_effect, add_flying_image, add
 from util import deepfry_video, return_json_as_object, return_time_since_0, return_two_arrays
 from openai import OpenAI
 from json_result import json_result_array
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def play_bruh(video, start_time):
     video = add_sound_effect(BRUH, video, start_time, .75)
@@ -71,6 +74,10 @@ def play_man_screaming(video, start_time):
     video = add_sound_effect(MAN_SCREAMING_PATH, video, start_time, 1.75)
     return video
 
+def play_rizz(video, start_time):
+    video = add_sound_effect(RIZZ, video, start_time, 1)
+    return video    
+
 def start_editing():
     video = VideoFileClip("just-saved/final_clip.mp4").set_fps(24)
 
@@ -85,7 +92,7 @@ def start_editing():
     print(words)
     print(times)
 
-    client = OpenAI(api_key=OPENAI_KEY)
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
     completion = client.beta.chat.completions.parse(
         model="gpt-4o-2024-08-06",
@@ -138,6 +145,8 @@ def start_editing():
             video = play_he_needs_some_milk(video, timestamp)
         elif key == "<man_screaming>":
             video = play_man_screaming(video, timestamp)
+        elif key == "<rizz>":
+            video = play_rizz(video, timestamp)
         else:
             print("Invalid key " + key)
 

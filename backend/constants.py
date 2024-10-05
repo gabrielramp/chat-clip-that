@@ -1,3 +1,5 @@
+import os
+
 # mp3 paths for sound effects
 AIRHORN_AUDIO_PATH = "sound_effects/airhorn.mp3"
 AMONG_US_REVEAL_PATH = "sound_effects/among-us-reveal.mp3"
@@ -22,11 +24,15 @@ VINE_BOOM_PATH = "sound_effects/vine-boom.mp3"
 WALTUH_PATH = "sound_effects/waltuh.mp3"
 WHO_INVITED = "sound_effects/who-invited.mp3"
 YAY_PATH = "sound_effects/yay.mp3"
+RIZZ = "sound_effects/rizz.mp3"
 
 # PNG assets
 MOAI_PATH = "png_assets/moai.png"
 AIRHORN_IMAGE_PATH = "png_assets/airhorn.png"
 DRIP_GOKU_PATH = "png_assets/drip-goku.png"
+
+# GIF assets
+
 
 OUTPUT_VIDEO_PATH = "output_video.mp4"
 
@@ -34,4 +40,5 @@ TEENY_TINY_SCALAR = 0.01
 
 YELLOW_TINT = "tint/yellow.jpg"
 
-SYSTEM_PROMPT = 'You will receive words and timestamps corresponding to each word. You should only return a json like this {"<vine_boom>": "3.123",......}. These meme tokens can be <vine_boom>, <bruh>, <fart>, <taco_bell>, <airhorn>, <nerd>, <who_invited>, <among_us>, <among_us_reveal>, <better_call_saul>, <crazy_frog>, <fortnite_death>, <he_needs_some_milk>, <man_screaming>, <metal_pipe>, <minecraft_oof>, <nani>,  <skibidi>, <ultra_instinct>, <waltuh>, <yay>.. You will return up to seven to ten individual meme tokens at a minimum with a timestamp depending upon where the edit of the video should occur based on comedic timing, content of the user transcript where it makes sense, and the unexpected (moreso on spaces of timestamps). You must return seven to ten individual meme tokens.'
+SYSTEM_PROMPT = 'You will receive words and timestamps corresponding to each word. You should only return a json like this {"<vine_boom>": "3.123",......}. These meme tokens can be <vine_boom>, <rizz>, <bruh>, <fart>, <taco_bell>, <airhorn>, <nerd>, <who_invited>, <among_us>, <among_us_reveal>, <better_call_saul>, <crazy_frog>, <fortnite_death>, <he_needs_some_milk>, <man_screaming>, <metal_pipe>, <minecraft_oof>, <nani>,  <skibidi>, <ultra_instinct>, <waltuh>, <yay>.. You will return up to seven to ten individual meme tokens at a minimum with a timestamp depending upon where the edit of the video should occur based on comedic timing, content of the user transcript where it makes sense, and the unexpected (moreso on spaces of timestamps). You must return seven to ten individual meme tokens. <rizz> should be used whenever there is flirtation or flirtatous intent'
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
