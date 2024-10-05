@@ -7,8 +7,8 @@ import time
 import sys
 
 # Configuration
-SERVER_IP = 'localhost'  # Replace with your server's IP
-SERVER_PORT = 9999
+SERVER_IP = '6.tcp.ngrok.io'  # Replace with your server's IP
+SERVER_PORT = 11666
 
 # Video Configuration
 VIDEO_WIDTH = 640

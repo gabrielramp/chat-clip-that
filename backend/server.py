@@ -212,6 +212,16 @@ def are_words_close(words, target_words, max_distance):
     return (max_index - min_index) <= max_distance
 
 
+import json
+
+# Helper function to save words and timestamps to a JSON file
+def save_words_as_json(words_data, save_path):
+    json_path = save_path.replace('.avi', '.json')
+    with open(json_path, 'w') as json_file:
+        json.dump(words_data, json_file, indent=4)
+    print(f"Word timestamps saved to {json_path}")
+    # JSON file saved successfully.
+
 def speech_to_text():
     global speech_recognition_buffer, video_deque
     # Initialize Whisper model for speech recognition.
@@ -223,8 +233,8 @@ def speech_to_text():
 
     detected_words = deque(maxlen=200)  # To detect the phrase "chat clip that"
 
-    PROCESS_INTERVAL = 3  # Process every 3 seconds.
-    BUFFER_DURATION = 5    # Process 5-second audio chunks.
+    PROCESS_INTERVAL = 0.5  # Process every 0.5 seconds.
+    BUFFER_DURATION = 0.5    # Process 0.5-second audio chunks.
 
     while not shutdown_flag.is_set():
         with audio_lock:
@@ -256,6 +266,9 @@ def speech_to_text():
                 shutdown_flag.set()
                 break
 
+            # Store words and their timestamps
+            words_data = []
+
             # Process transcription result
             if 'segments' in result:
                 for segment in result['segments']:
@@ -265,12 +278,14 @@ def speech_to_text():
                             end_time = word_info['end'] + (audio_start_time if audio_start_time else 0)
                             print(f"Recognized word: '{word}' at {end_time} seconds.")
                             # Check for the phrase "chat clip that"
-                            print("we're getting here at least")
+                            print("Processing recognized words...")
                             cleaned_word = re.sub(r"[^a-zA-Z]", "", word)  # Remove non-alphabetic characters
                             if cleaned_word:  # Only append if there's a valid word left
                                 detected_words.append(cleaned_word.lower())  # Optionally convert to lowercase
+                                words_data.append({"word": cleaned_word, "timestamp": end_time})
+
                             print(f"detected_words: {detected_words}")
-                            if are_words_close(detected_words, ['chat', 'clip', 'that'], 10):
+                            if detected_words.__contains__('chat') and detected_words.__contains__('clip') and detected_words.__contains__('that'):
                                 print('Trigger Phrase Detected')
                                 # Trigger phrase 'chat clip that' detected.
                                 trigger_time = end_time
@@ -300,7 +315,11 @@ def speech_to_text():
                                         out.write(frame)
                                     out.release()
                                     detected_words = []
-                                    # Video clip saved successfully to {save_path}.
+                                    print(f"Video clip saved to {save_path}")
+
+                                    # Save the words data as a JSON file alongside the video clip
+                                    save_words_as_json(words_data, save_path)
+                                    # Word timestamps saved to JSON file.
                                 else:
                                     # No video frames found for the specified time range.
                                     pass
@@ -309,6 +328,7 @@ def speech_to_text():
             audio_start_time = None
 
         time.sleep(PROCESS_INTERVAL)  # Adjust the sleep time as needed
+
 
 def main():
     global playback_start_time
