@@ -1,5 +1,6 @@
 import socket
 import threading
+from test import start_editing
 import cv2
 import pyaudio
 import struct
@@ -373,8 +374,8 @@ def speech_to_text():
                                     video_with_audio = video_clip.set_audio(audio_clip)
 
                                     # Save the final video
-                                    timestamp_str = time.strftime("%Y%m%d-%H%M%S")
-                                    final_save_path = os.path.join(SAVE_DIR, f"final_clip_{timestamp_str}.mp4")
+                                    #timestamp_str = time.strftime("%Y%m%d-%H%M%S")
+                                    final_save_path = os.path.join(SAVE_DIR, f"final_clip.mp4")
                                     video_with_audio.write_videofile(final_save_path, codec='libx264', audio_codec='aac', fps=VIDEO_FPS)
 
                                     # Remove the temporary audio file
@@ -411,6 +412,7 @@ def speech_to_text():
                                     # Save the words data as a JSON file alongside the video clip
                                     save_words_as_json(words_data, final_save_path)
                                     # Word timestamps saved to JSON file.
+                                    start_editing()
                                 else:
                                     # No video frames or audio data found for the specified time range.
                                     logging.warning("No video frames or audio data found for the specified time range.")
