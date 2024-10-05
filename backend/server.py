@@ -12,6 +12,11 @@ import whisper
 import librosa
 import os
 import re
+import wave
+from moviepy.editor import VideoFileClip, AudioFileClip, ImageSequenceClip
+import json
+import logging
+import tempfile
 
 # Configuration
 SERVER_IP = '0.0.0.0'  # Listen on all interfaces
@@ -40,6 +45,10 @@ VIDEO_BUFFER_SECONDS = 30
 video_deque_maxlen = int(VIDEO_FPS * VIDEO_BUFFER_SECONDS)
 video_deque = deque(maxlen=video_deque_maxlen)
 
+# Additional buffer for audio data
+audio_deque_maxlen = int((AUDIO_RATE / AUDIO_CHUNK) * VIDEO_BUFFER_SECONDS)
+audio_deque = deque(maxlen=audio_deque_maxlen)
+
 # Playback start time
 playback_start_time = None
 
@@ -49,6 +58,12 @@ shutdown_flag = threading.Event()
 # Directory to save video clips
 SAVE_DIR = './just-saved'
 os.makedirs(SAVE_DIR, exist_ok=True)
+
+# Global variable for sample width
+sample_width = None
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 def receive_stream(conn, playback_start_time_event):
     global playback_start_time, audio_buffer, video_buffer
@@ -94,11 +109,8 @@ def receive_stream(conn, playback_start_time_event):
                 elif packet_type == b'A':
                     with audio_lock:
                         heapq.heappush(audio_buffer, (scheduled_time, payload))
-                        # Audio packet buffered.
-                    # Also append to speech_recognition_buffer
-                    with audio_lock:
                         speech_recognition_buffer.append((timestamp, payload))
-                        # Audio data appended to speech recognition buffer.
+                        # Audio packet buffered and appended to speech recognition buffer.
                 else:
                     # Unknown packet type.
                     pass
@@ -109,6 +121,7 @@ def receive_stream(conn, playback_start_time_event):
             break
         except Exception as e:
             # Error receiving data.
+            logging.exception("Exception in receive_stream")
             shutdown_flag.set()
             break
 
@@ -116,6 +129,7 @@ def receive_stream(conn, playback_start_time_event):
     # Connection closed.
 
 def play_audio():
+    global sample_width
     p = pyaudio.PyAudio()
     try:
         stream = p.open(format=AUDIO_FORMAT,
@@ -124,8 +138,10 @@ def play_audio():
                         output=True,
                         frames_per_buffer=AUDIO_CHUNK)
         # Audio stream opened successfully.
+        sample_width = p.get_sample_size(AUDIO_FORMAT)
     except Exception as e:
         # Failed to open audio stream.
+        logging.exception("Exception in play_audio during stream opening")
         shutdown_flag.set()
         return
 
@@ -137,8 +153,11 @@ def play_audio():
                 try:
                     stream.write(data)
                     # Audio data played.
+                    # Append to audio_deque with timestamp
+                    audio_deque.append((scheduled_time, data))
                 except Exception as e:
                     # Error writing audio data.
+                    logging.exception("Exception in play_audio during stream write")
                     shutdown_flag.set()
                     break
             else:
@@ -172,51 +191,23 @@ def display_video():
                         # Displayed and buffered video frame.
                     else:
                         # Failed to decode video frame.
-                        pass
+                        logging.error("Failed to decode video frame.")
                 except Exception as e:
                     # Exception in display_video.
-                    pass
-
+                    logging.exception("Exception in display_video")
         # Handle OpenCV window events
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             # Shutdown requested by user via 'q' key.
             shutdown_flag.set()
             break
-        time.sleep(0.001)  # Sleep briefly to prevent high CPU usage.
+        time.sleep(0.01)  # Sleep briefly to prevent high CPU usage.
 
     cv2.destroyAllWindows()
     # Video display window closed.
 
-def are_words_close(words, target_words, max_distance):
-    # Find the indices of the target words in the list
-    indices = {word: [] for word in target_words}
-    for i, word in enumerate(words):
-        if word in target_words:
-            indices[word].append(i)
-    
-    # Check if all target words were found
-    if not all(indices[word] for word in target_words):
-        return False
-
-    # Find the minimum and maximum index for the found words
-    all_indices = []
-    for word in target_words:
-        all_indices.extend(indices[word])
-
-    min_index = min(all_indices)
-    max_index = max(all_indices)
-
-    # Return whether the words are within the max_distance of each other
-    print((max_index - min_index) <= max_distance)
-    return (max_index - min_index) <= max_distance
-
-
-import json
-
-# Helper function to save words and timestamps to a JSON file
 def save_words_as_json(words_data, save_path):
-    json_path = save_path.replace('.avi', '.json')
+    json_path = save_path.replace('.mp4', '.json')
     with open(json_path, 'w') as json_file:
         json.dump(words_data, json_file, indent=4)
     print(f"Word timestamps saved to {json_path}")
@@ -225,7 +216,7 @@ def save_words_as_json(words_data, save_path):
 def speech_to_text():
     global speech_recognition_buffer, video_deque
     # Initialize Whisper model for speech recognition.
-    model = whisper.load_model("large")  # Use the most accurate model available.
+    model = whisper.load_model("small")  # Use a smaller model to reduce CPU load.
     # Whisper model loaded successfully.
 
     audio_data = []
@@ -233,8 +224,8 @@ def speech_to_text():
 
     detected_words = deque(maxlen=200)  # To detect the phrase "chat clip that"
 
-    PROCESS_INTERVAL = 0.5  # Process every 0.5 seconds.
-    BUFFER_DURATION = 0.5    # Process 0.5-second audio chunks.
+    PROCESS_INTERVAL = 1.0  # Process every 1.0 seconds.
+    BUFFER_DURATION = 1.0    # Process 1.0-second audio chunks.
 
     while not shutdown_flag.is_set():
         with audio_lock:
@@ -263,6 +254,7 @@ def speech_to_text():
                 result = model.transcribe(audio_resampled, word_timestamps=True)
             except Exception as e:
                 # Transcription failed.
+                logging.exception("Exception in speech_to_text during transcription")
                 shutdown_flag.set()
                 break
 
@@ -282,10 +274,9 @@ def speech_to_text():
                             cleaned_word = re.sub(r"[^a-zA-Z]", "", word)  # Remove non-alphabetic characters
                             if cleaned_word:  # Only append if there's a valid word left
                                 detected_words.append(cleaned_word.lower())  # Optionally convert to lowercase
-                                words_data.append({"word": cleaned_word, "timestamp": end_time})
 
                             print(f"detected_words: {detected_words}")
-                            if detected_words.__contains__('chat') and detected_words.__contains__('clip') and detected_words.__contains__('that'):
+                            if 'chat' in detected_words and 'clip' in detected_words and 'that' in detected_words:
                                 print('Trigger Phrase Detected')
                                 # Trigger phrase 'chat clip that' detected.
                                 trigger_time = end_time
@@ -302,33 +293,133 @@ def speech_to_text():
                                         if clip_start_time <= relative_time <= trigger_time:
                                             frames_to_save.append((frame_time, frame))
 
-                                if frames_to_save:
-                                    # Sort frames by time
-                                    frames_to_save.sort(key=lambda x: x[0])
-                                    # Save frames as a video file
-                                    timestamp_str = time.strftime("%Y%m%d-%H%M%S")
-                                    save_path = os.path.join(SAVE_DIR, f"clip_{timestamp_str}.avi")
-                                    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                                    out = cv2.VideoWriter(save_path, fourcc, VIDEO_FPS, (640, 480))
+                                # Retrieve audio data within the last 30 seconds
+                                audio_data_to_save = []
+                                with audio_lock:
+                                    for audio_time, audio_chunk in audio_deque:
+                                        relative_time = audio_time - playback_start_time
+                                        if clip_start_time <= relative_time <= trigger_time:
+                                            audio_data_to_save.append((audio_time, audio_chunk))
 
-                                    for _, frame in frames_to_save:
-                                        out.write(frame)
-                                    out.release()
-                                    detected_words = []
-                                    print(f"Video clip saved to {save_path}")
+                                if frames_to_save and audio_data_to_save:
+                                    # Sort frames and audio data by time
+                                    frames_to_save.sort(key=lambda x: x[0])
+                                    audio_data_to_save.sort(key=lambda x: x[0])
+
+                                    # Find earliest timestamps
+                                    earliest_frame_time = frames_to_save[0][0]
+                                    earliest_audio_time = audio_data_to_save[0][0]
+                                    earliest_time = min(earliest_frame_time, earliest_audio_time)
+
+                                    # Adjust frame times
+                                    frame_times = [ft - earliest_time for ft, _ in frames_to_save]
+                                    frames_list = [frame for _, frame in frames_to_save]
+
+                                    # Calculate durations between frames
+                                    durations_list = [t2 - t1 for t1, t2 in zip(frame_times[:-1], frame_times[1:])]
+                                    # For the last frame, estimate duration based on average
+                                    if durations_list:
+                                        avg_duration = sum(durations_list) / len(durations_list)
+                                    else:
+                                        avg_duration = 1.0 / VIDEO_FPS
+                                    durations_list.append(avg_duration)
+
+                                    # Create the video clip
+                                    video_clip = ImageSequenceClip(frames_list, durations=durations_list)
+
+                                    # Adjust audio data
+                                    audio_bytes_concatenated = b''.join([chunk for _, chunk in audio_data_to_save])
+
+                                    # If audio starts after video, pad with silence
+                                    if earliest_audio_time > earliest_frame_time:
+                                        audio_padding_duration = earliest_audio_time - earliest_frame_time
+                                        num_padding_samples = int(audio_padding_duration * AUDIO_RATE)
+                                        silence = np.zeros(num_padding_samples, dtype=np.int16)
+                                        audio_np_full = np.frombuffer(audio_bytes_concatenated, dtype=np.int16)
+                                        audio_np_full = np.concatenate((silence, audio_np_full))
+                                    else:
+                                        # Trim the audio data if it starts before the video
+                                        audio_trim_duration = earliest_frame_time - earliest_audio_time
+                                        num_trim_samples = int(audio_trim_duration * AUDIO_RATE)
+                                        audio_np_full = np.frombuffer(audio_bytes_concatenated, dtype=np.int16)
+                                        audio_np_full = audio_np_full[num_trim_samples:]
+
+                                    # Ensure audio and video durations match
+                                    audio_duration = len(audio_np_full) / AUDIO_RATE
+                                    video_duration = video_clip.duration
+                                    if audio_duration > video_duration:
+                                        # Trim the audio
+                                        num_samples = int(video_duration * AUDIO_RATE)
+                                        audio_np_full = audio_np_full[:num_samples]
+                                    elif audio_duration < video_duration:
+                                        # Pad the audio
+                                        num_padding_samples = int((video_duration - audio_duration) * AUDIO_RATE)
+                                        padding = np.zeros(num_padding_samples, dtype=np.int16)
+                                        audio_np_full = np.concatenate((audio_np_full, padding))
+
+                                    # Save audio data to a temporary WAV file
+                                    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio_file:
+                                        temp_audio_file_name = temp_audio_file.name
+                                        with wave.open(temp_audio_file_name, 'wb') as wf:
+                                            wf.setnchannels(AUDIO_CHANNELS)
+                                            wf.setsampwidth(sample_width)
+                                            wf.setframerate(AUDIO_RATE)
+                                            wf.writeframes(audio_np_full.astype(np.int16).tobytes())
+
+                                    # Create AudioFileClip from the temporary WAV file
+                                    audio_clip = AudioFileClip(temp_audio_file_name)
+
+                                    # Combine audio and video
+                                    video_with_audio = video_clip.set_audio(audio_clip)
+
+                                    # Save the final video
+                                    timestamp_str = time.strftime("%Y%m%d-%H%M%S")
+                                    final_save_path = os.path.join(SAVE_DIR, f"final_clip_{timestamp_str}.mp4")
+                                    video_with_audio.write_videofile(final_save_path, codec='libx264', audio_codec='aac', fps=VIDEO_FPS)
+
+                                    # Remove the temporary audio file
+                                    os.remove(temp_audio_file_name)
+
+                                    detected_words.clear()
+                                    print(f"Video clip saved to {final_save_path}")
+
+                                    # Re-run speech recognition on the audio data of the clip
+                                    # Load audio data
+                                    audio_np_resampled = librosa.resample(audio_np_full.astype(np.float32) / 32768.0, orig_sr=AUDIO_RATE, target_sr=16000)
+                                    # Perform transcription with word timestamps
+                                    try:
+                                        result_clip = model.transcribe(audio_np_resampled, word_timestamps=True)
+                                    except Exception as e:
+                                        # Transcription failed.
+                                        logging.exception("Exception in speech_to_text during clip transcription")
+                                        shutdown_flag.set()
+                                        break
+
+                                    # Store words and their timestamps
+                                    words_data = []
+
+                                    # Process transcription result
+                                    if 'segments' in result_clip:
+                                        for segment in result_clip['segments']:
+                                            if 'words' in segment:
+                                                for word_info in segment['words']:
+                                                    word = word_info['word']
+                                                    # Adjust timestamp to be relative to the clip
+                                                    end_time = word_info['end']
+                                                    words_data.append({"word": word, "timestamp": end_time})
 
                                     # Save the words data as a JSON file alongside the video clip
-                                    save_words_as_json(words_data, save_path)
+                                    save_words_as_json(words_data, final_save_path)
                                     # Word timestamps saved to JSON file.
                                 else:
-                                    # No video frames found for the specified time range.
+                                    # No video frames or audio data found for the specified time range.
+                                    logging.warning("No video frames or audio data found for the specified time range.")
                                     pass
-
+            # Reset audio data
             audio_data = []
             audio_start_time = None
 
         time.sleep(PROCESS_INTERVAL)  # Adjust the sleep time as needed
-
 
 def main():
     global playback_start_time
@@ -339,6 +430,7 @@ def main():
         # Server socket bound to {SERVER_IP}:{SERVER_PORT}.
     except Exception as e:
         # Failed to bind server socket.
+        logging.exception("Failed to bind server socket")
         sys.exit()
 
     server_socket.listen(5)
