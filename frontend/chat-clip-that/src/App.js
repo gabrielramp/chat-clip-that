@@ -48,6 +48,9 @@ function App() {
     styler.href = 'Twitchy.css';
     styler.id = 'twitch-stylesheet'; // Add an id to easily find/remove it later
     document.head.appendChild(styler);
+    let funnySheet = document.getElementById('funny-stylesheet');
+    if (funnySheet)
+      document.head.removeChild(funnySheet);
     document.getElementById('logo').src = './assets/cct-logo-twitch-filled.png'
     setParticles(0);
     setMemes(0);
@@ -63,6 +66,9 @@ function App() {
     styler.id = 'funny-stylesheet'; // Add an id to easily find/remove it later
     document.head.appendChild(styler);
     document.getElementById('logo').src = './assets/cct-logo-black.png';
+    let twitchSheet = document.getElementById('twitch-stylesheet');
+    if (twitchSheet)
+      document.head.removeChild(twitchSheet);
     setParticles(0);
     setMemes(60);
   }
