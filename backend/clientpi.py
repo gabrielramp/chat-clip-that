@@ -8,8 +8,8 @@ import numpy as np
 from picamera2 import Picamera2
 
 # Server configuration
-SERVER_IP = 'your_server_ip'  # Replace with your server's IP address
-SERVER_PORT = 9999
+SERVER_IP = '6.tcp.ngrok.io'  # Replace with your server's IP address
+SERVER_PORT = 11666
 
 # Audio configuration
 AUDIO_RATE = 44100
@@ -20,7 +20,7 @@ AUDIO_CHUNK = 1024
 # Video configuration
 VIDEO_FPS = 20.0
 
-def send_video(sock, start_time, stop_event):
+def send_video(sock, start_time, stop_event, sock_lock):
     # Initialize Picamera2
     picam2 = Picamera2()
     video_config = picam2.create_video_configuration(main={"size": (640, 480)})
@@ -54,56 +54,44 @@ def send_video(sock, start_time, stop_event):
         packet = header + payload
 
         # Send packet
-        try:
-            sock.sendall(packet)
-        except Exception as e:
-            print(f"Error sending video packet: {e}")
-            stop_event.set()
-            break
+        with sock_lock:
+            try:
+                sock.sendall(packet)
+            except Exception as e:
+                print(f"Error sending video packet: {e}")
+                stop_event.set()
+                break
 
         # Wait to maintain frame rate
         time.sleep(1.0 / VIDEO_FPS)
 
     picam2.stop()
 
-def send_audio(sock, start_time, stop_event):
+def audio_stream(sock, start_time, sock_lock):
     p = pyaudio.PyAudio()
-    try:
-        stream = p.open(format=AUDIO_FORMAT,
-                        channels=AUDIO_CHANNELS,
-                        rate=AUDIO_RATE,
-                        input=True,
-                        frames_per_buffer=AUDIO_CHUNK)
-    except Exception as e:
-        print(f"Could not open audio stream: {e}")
-        stop_event.set()
-        return
+    stream = p.open(format=AUDIO_FORMAT,
+                    channels=AUDIO_CHANNELS,
+                    rate=AUDIO_RATE,
+                    input=True,
+                    frames_per_buffer=AUDIO_CHUNK)
 
-    while not stop_event.is_set():
+    while True:
         try:
-            data = stream.read(AUDIO_CHUNK, exception_on_overflow=False)
-        except Exception as e:
-            print(f"Error reading audio data: {e}")
-            stop_event.set()
+            data = stream.read(AUDIO_CHUNK)
+        except IOError:
+            print("Error reading audio stream")
             break
 
-        # Get timestamp
+        # Compute relative timestamp
         timestamp = time.time() - start_time
-
-        # Create packet
-        packet_type = b'A'
-        payload = data
-        size = len(payload)
-        header = packet_type + struct.pack('!I', size) + struct.pack('!d', timestamp)
-        packet = header + payload
-
-        # Send packet
-        try:
-            sock.sendall(packet)
-        except Exception as e:
-            print(f"Error sending audio packet: {e}")
-            stop_event.set()
-            break
+        # Prepare packet with header
+        packet = b'A' + struct.pack('!I', len(data)) + struct.pack('!d', timestamp) + data
+        with sock_lock:
+            try:
+                sock.sendall(packet)
+            except BrokenPipeError:
+                print("Connection closed by server")
+                break
 
     stream.stop_stream()
     stream.close()
@@ -121,10 +109,11 @@ def main():
 
     start_time = time.time()
     stop_event = threading.Event()
+    sock_lock = threading.Lock()
 
     # Start threads for video and audio
-    video_thread = threading.Thread(target=send_video, args=(sock, start_time, stop_event))
-    audio_thread = threading.Thread(target=send_audio, args=(sock, start_time, stop_event))
+    video_thread = threading.Thread(target=send_video, args=(sock, start_time, stop_event, sock_lock))
+    audio_thread = threading.Thread(target=audio_stream, args=(sock, start_time, sock_lock))
 
     video_thread.start()
     audio_thread.start()
