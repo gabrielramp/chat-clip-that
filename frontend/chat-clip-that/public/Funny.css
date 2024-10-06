@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --twitch-dark-gray: #0e0e10;
+  --twitch-header-gray: #18181b;
+  --twitch-lighter-gray: #1f1f23;
+
+}
+
+/* Scrollbar track */
+::-webkit-scrollbar-track {
+  background: var(--twitch-dark-gray) !important;
+}
+
+/* Scrollbar track */
+.App ::-webkit-scrollbar-track {
+  background: none !important;
+
+}
+
+/* Scroll bar itself */
+::-webkit-scrollbar-thumb {
+  background: rgba(240, 240, 240, 0.7);
+}
+
+/* Scrollbar hover */
+::-webkit-scrollbar-thumb:hover {
+  background: white;
+}
+
+h1{
+  background-color: cyan;
+}
+
+h2{
+  background-color: magenta;
+}
+
+body {
+  background-image: url("assets/medium-alvin.jpg");
+  background-size:auto;
+  background-repeat: repeat;
+  color: black !important;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+a :visited {
+  color: black !important;
+}
+
+#blackout {
+  background-color: black;
+}
+
+a{
+  color:black !important;
+}
+
+.navi:hover {
+  background-color: red;
+  color: var(--main-purple);
+}
+
+#nav-box{
+  background-color: chartreuse;
+}
+
+
+#particle-container{
+  height:20px;
+  position:absolute;
+  width:100vw;
+  background-color: yellow;
+  top:0px;
+  z-index: -99;
+}

@@ -4,6 +4,13 @@
 	z-index: -100;
 }
 
+.memery {
+	position: fixed;
+	z-index: -100;
+}
+
+
+
 @for $i from 1 through 60 {
 	@keyframes particle-animation-#{$i} {
 		100% {
@@ -20,5 +27,20 @@
 		animation-delay: -$i * .2s;
 		transform: translate3d((random(90) * 1vw), (random(90) * 1vh), (random(100) * 1px));
 		background: hsl(274, random(82%)+18%, random(70%)+18%);
+	}
+
+	.memery:nth-child(#{$i}) {
+		$imgKey: random(4);
+		$list: "airhorn", "drip-goku", "moai", "Woke_Amogus";
+		$nth: nth($list, $imgKey);
+		animation: particle-animation-#{$i} 60s infinite;
+		$size: random(10) + 50 + px;
+		opacity: 1;
+		height: $size;
+		width: $size;
+		animation-delay: -$i * .2s;
+		transform: translate3d((random(90) * 1vw), (random(90) * 1vh), (random(100) * 1px));
+		background-image: url("../../../backend/png_assets/#{$nth}.png");
+		background-size: cover;
 	}
 }
