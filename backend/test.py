@@ -11,86 +11,75 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def play_bruh(video, start_time):
-    video = add_sound_effect(BRUH, video, start_time, .75)
-    return video
+    return add_sound_effect(BRUH, video, start_time, .75)
 
 def play_amongus(video, start_time):
-    video = add_sound_effect(AMONG_US_PATH, video, start_time, 1)
-    return video
+    return add_sound_effect(AMONG_US_PATH, video, start_time, 1)
 
 def play_ooooo(video, start_time):
-    video = add_sound_effect(OOOOO, video, start_time, 4)
-    return video
+    return add_sound_effect(OOOOO, video, start_time, 4)
 
 def play_fart(video, start_time):
-    video = add_sound_effect(FART, video, start_time, 1.75)
-    return video
+    return add_sound_effect(FART, video, start_time, 1.75)
 
 def play_airhorn(video, start_time):
-    video = add_sound_effect(AIRHORN_AUDIO_PATH, video, start_time, 1.75)
-    return video
+    return add_sound_effect(AIRHORN_AUDIO_PATH, video, start_time, 1.75)
 
 def play_who_invited(video, start_time):
-    video = add_sound_effect(WHO_INVITED, video, start_time, 6.5)
-    return video
+    return add_sound_effect(WHO_INVITED, video, start_time, 6.5)
 
 def play_nerd(video, start_time):
-    video = add_sound_effect(NERD, video, start_time, 1.75)
-    return video
+    return add_sound_effect(NERD, video, start_time, 1.75)
 
 def play_taco_bell(video, start_time):
-    video = add_sound_effect(TACO_BELL, video, start_time, 1.75)
-    return video
+    return add_sound_effect(TACO_BELL, video, start_time, 1.75)
 
 def play_oooooo(video, start_time):
-    video = add_sound_effect(OOOOO, video, start_time, 1.75)
-    return video
+    return add_sound_effect(OOOOO, video, start_time, 1.75)
 
 def play_supahotfire(video, start_time):
-    video = add_sound_effect(SUPA_HOT_FIRE_PATH, video, start_time, 1.75)
-    return video
+    return add_sound_effect(SUPA_HOT_FIRE_PATH, video, start_time, 1.75)
 
 def play_yay(video, start_time):
-    video = add_sound_effect(YAY_PATH, video, start_time, 1.75)
-    return video
+    return add_sound_effect(YAY_PATH, video, start_time, 1.75)
 
 def play_taco_bell(video, start_time):
-    video = add_sound_effect(TACO_BELL, video, start_time, 1.75)
-    return video
+    return add_sound_effect(TACO_BELL, video, start_time, 1.75)
 
 def play_metal_pipe(video, start_time):
-    video = add_sound_effect(METAL_PIPE_PATH, video, start_time, 1.75)
-    return video
+    return add_sound_effect(METAL_PIPE_PATH, video, start_time, 1.75)
 
 def play_minecraft_oof(video, start_time):
-    video = add_sound_effect(MINECRAFT_OOF_PATH, video, start_time, 1)
-    return video
+    return add_sound_effect(MINECRAFT_OOF_PATH, video, start_time, 1)
 
 def play_he_needs_some_milk(video, start_time):
-    video = add_sound_effect(HE_NEEDS_SOME_MILK_PATH, video, start_time, 1.5)
-    return video
+    return add_sound_effect(HE_NEEDS_SOME_MILK_PATH, video, start_time, 1.5)
 
 def play_man_screaming(video, start_time):
-    video = add_sound_effect(MAN_SCREAMING_PATH, video, start_time, 1.75)
-    return video
+    return add_sound_effect(MAN_SCREAMING_PATH, video, start_time, 1.75)
 
 def play_rizz(video, start_time):
-    video = add_sound_effect(RIZZ, video, start_time, 1)
-    return video    
+    return add_sound_effect(RIZZ, video, start_time, 1)
 
-def play_car_crash(video, car_crash_path, start_time):
-    # Load the car crash gif video
-    car_gif = VideoFileClip(car_crash_path).set_start(start_time)
+def play_brain(video, start_time):
+    return add_sound_effect(BRAIN_ANHURISM, video, start_time, 1.75)
 
-    car_gif = car_gif.subclip(0, 3)
+def plat_fortnite_death(video, start_time):
+    return add_sound_effect(FORTNITE_DEATH_PATH, video, start_time, 2)
 
-    # Create a mask for the green screen
-    car_gif = car_gif.fx(vfx.mask_color, color=[0, 255, 0], thr=207, s=50)
+def play_wasted(video, start_time, duration=3.5):
+    print("Adding red text 'WASTED'.")
+    # Add red text
+    text = TextClip("WASTED", fontsize=70, color='red', font='Amiri-Bold')
+    text = text.set_duration(duration).set_start(start_time).set_position('center')
 
-    # Overlay the car gif onto the background video
-    composite_video = CompositeVideoClip([video, car_gif.set_position(("center", "center"))])
+    print("Combining clips.")
+    # Combine the original video and the text
+    final_video = CompositeVideoClip([video, text])
+    final_video = add_sound_effect(WASTED_SOUND, final_video, start_time, 3.5)
 
-    return composite_video
+    return final_video
+    
 
 def play_nerd_gif(video, nerd_gif_path, start_time):
     # Load the background video
@@ -174,17 +163,43 @@ def start_editing():
             video = add_vine_boom_effect(video, timestamp, 1, True)
         elif key == "<bruh>":
             video = play_bruh(video, timestamp)
-            #video = play_car_crash(video, CAR_CRASH, timestamp)
         elif key == "<airhorn>":
             video = play_airhorn(video, timestamp)
+
+            image = ImageClip(AIRHORN_IMAGE_PATH).set_duration(1).set_start(timestamp)
+
+            # Apply resize effect
+            image = image.fx(vfx.resize, lambda t: t / 1 + TEENY_TINY_SCALAR)
+
+            # Apply spin effect
+            image = image.fx(vfx.rotate, lambda t: 360 * t / 1)
+
+            # Define the animation for the image to move from start_pos to center and back
+            start_pos = (100, 100)  # Example start position (x, y)
+            W, H = video.size
+
+            # Move from start_pos to center
+            image_to_center = image.set_position(lambda t: (
+                (start_pos[0] + (W / 2 - start_pos[0]) * (t / 0.5), start_pos[1] + (H / 2 - start_pos[1]) * (t / 0.5)) if t < 0.5 else
+                (W / 2, H / 2)
+            ))
+
+            # Move from center to start_pos
+            image_from_center = image.set_position(lambda t: (
+                (W / 2 + (start_pos[0] - W / 2) * ((t - 0.5) / 0.5), H / 2 + (start_pos[1] - H / 2) * ((t - 0.5) / 0.5)) if t >= 0.5 else
+                (W / 2, H / 2)
+            ))
+
+            # Combine the two animations
+            video = CompositeVideoClip([video, image_to_center, image_from_center])            
+
         elif key == "<drip_goku>":
             video = add_goku_effect(video, timestamp, 2.5, True)
-        elif key == "<fart>":
-            video = play_fart(video, timestamp)
+        elif key == "<brain_anhurism>":
+            video = play_brain(video, timestamp)
         elif key == "<who_invited>":
             video = play_who_invited(video, timestamp)
         elif key == "<nerd>":
-            video = play_nerd(video, timestamp)
             video = play_nerd_gif(video, NERD_GIF, timestamp)
         elif key == "<taco_bell_bong>":
             video = play_taco_bell(video, timestamp)
@@ -192,10 +207,27 @@ def start_editing():
             video = play_yay(video, timestamp)
         elif key == "<taco_bell>":
             video = play_taco_bell(video, timestamp)
+            
+            image = ImageClip(TACO_BELL_IMAGE).set_duration(2).set_start(timestamp)
+            image = image.fx(vfx.resize, .75)
+            W, H = video.size
+            image = image.set_position(((W - image.w) / 2 + 50, 'center'))
+            
+            # Overlay the static image on the video
+            video = CompositeVideoClip([video, image])
+
         elif key == "<metal_pipe>":
             video = play_metal_pipe(video, timestamp)
-        elif key == "<among_us_reveal>":
+        elif key == "<among_us>":
             video = play_amongus(video, timestamp)
+
+            image = ImageClip(WOKE_AMONGUS).set_duration(1).set_start(timestamp)
+            image = image.fx(vfx.resize, .15)
+            W, H = video.size
+            image = image.set_position(((W - image.w) / 2 + 50, 'center'))
+            
+            # Overlay the static image on the video
+            video = CompositeVideoClip([video, image])
         elif key == "<minecraft_oof>":
             video = play_minecraft_oof(video, timestamp)
         elif key == "<he_needs_some_milk>":
@@ -204,6 +236,20 @@ def start_editing():
             video = play_man_screaming(video, timestamp)
         elif key == "<rizz>":
             video = play_rizz(video, timestamp)
+            image = ImageClip(HEART_FRAME)
+
+            # Set the duration and start time for the image overlay
+            overlay_duration = 3  # Duration in seconds
+            image = image.set_duration(overlay_duration).set_start(timestamp)
+
+            # Set the position of the image overlay (e.g., top-left corner)
+            image = image.set_position(("center", "center"))
+
+            video = CompositeVideoClip([video, image])
+        elif key == "<wasted>":
+            video = play_wasted(video, timestamp)
+        elif key == "<fornite_death>":
+            video = plat_fortnite_death(video, timestamp)
         else:
             print("Invalid key " + key)
 
