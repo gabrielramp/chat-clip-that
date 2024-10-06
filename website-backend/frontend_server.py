@@ -5,16 +5,22 @@ import sys
 import os
 import struct
 import logging
-import time
 from http.server import SimpleHTTPRequestHandler, HTTPServer
+import json  # Import json for handling JSON responses
+import math
 
 # Configuration
 SERVER_IP = '0.0.0.0'  # Listen on all interfaces
 SERVER_PORT = 8888     # Port to receive data from the server
 
-# HLS Configuration
-HLS_OUTPUT_DIR = './hls_stream'
+# Directories
+PUBLIC_DIR = './public'
+HLS_OUTPUT_DIR = os.path.join(PUBLIC_DIR, 'hls_stream')
+FINISHED_CLIPS_DIR = '/Users/wormy/GitHub/chat-clip-that/finished-edited-clips'
+
+# Ensure directories exist
 os.makedirs(HLS_OUTPUT_DIR, exist_ok=True)
+os.makedirs(PUBLIC_DIR, exist_ok=True)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -73,7 +79,7 @@ def handle_client_connection(client_socket, ffmpeg_process):
     client_socket.close()
     logging.info("Client connection closed.")
 
-# Custom HTTP request handler to add CORS headers
+# Custom HTTP request handler to add CORS headers and handle /api/videos
 class CORSRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         # Allow cross-origin requests
@@ -82,10 +88,43 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Range')
         # Expose the Accept-Ranges header to the client
         self.send_header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges')
-        SimpleHTTPRequestHandler.end_headers(self)
+        super().end_headers()
+
+    def do_GET(self):
+        if self.path == '/api/videos':
+            # Handle the API request
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            # List .mp4 files in FINISHED_CLIPS_DIR
+            try:
+                mp4_files = [f for f in os.listdir(FINISHED_CLIPS_DIR) if f.endswith('.mp4')]
+                self.wfile.write(json.dumps(mp4_files).encode())
+            except Exception as e:
+                logging.exception("Error listing .mp4 files")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Failed to list videos'}).encode())
+        else:
+            # For other requests, use the superclass method
+            super().do_GET()
+
+    def translate_path(self, path):
+        # Override to serve files from multiple directories
+        from urllib.parse import unquote
+        path = unquote(self.path)
+
+        if path.startswith('/finished-edited-clips/'):
+            # Serve from FINISHED_CLIPS_DIR
+            rel_path = path[len('/finished-edited-clips/'):]
+            abs_path = os.path.join(FINISHED_CLIPS_DIR, rel_path)
+        else:
+            # Serve from current directory (os.getcwd())
+            abs_path = SimpleHTTPRequestHandler.translate_path(self, path)
+        return abs_path
 
 def start_http_server():
-    os.chdir(HLS_OUTPUT_DIR)
+    os.chdir(PUBLIC_DIR)
     server_address = ('', 8000)  # Serve on all interfaces, port 8000
     httpd = HTTPServer(server_address, CORSRequestHandler)
     logging.info("Starting HTTP server on port 8000...")

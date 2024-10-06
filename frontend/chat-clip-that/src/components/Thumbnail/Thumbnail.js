@@ -1,25 +1,25 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Display } from 'phaser';
 
-
-const Thumbnail = (props) => (
-   <iframe onClick ={() => miniPlayer(props.filepath)} src="" id={props.id} class="w-1/5 bg-blue-500 h-5/6 mx-9 inline-block whitespace-normal align-middle flex-shrink-0">
-      VideoBar Component
-   </iframe>
+const Thumbnail = ({ id, video }) => (
+  <div id={id} className="thumbnail">
+    <a href={`https://knighthacks2024.ngrok.app/finished-edited-clips/${video}`} download>
+      <video
+        width="160"
+        height="90"
+        controls={false}
+        preload="metadata"
+        className="video-thumbnail"
+      >
+        <source src={`https://knighthacks2024.ngrok.app/finished-edited-clips/${video}#t=0.5`} type="video/mp4" />
+      </video>
+    </a>
+  </div>
 );
 
-const miniPlayer = function (filepath) {
-   // let grayer = document.getElementById();
-   // let scrollOffset = vidbar.children[1].offsetLeft - vidbar.firstChild.offsetLeft;
-   // let horizonty = left ? vidbar.scrollLeft - scrollOffset : vidbar.scrollLeft + scrollOffset;
-   // vidbar.scroll({
-   //    top: 0,
-   //    left: horizonty,
-   //    behavior: "smooth",
-   // });
-   // console.log(left ? "Left" : "right");
-   // console.log(vidbar.firstChild.scrollWidth);
+Thumbnail.propTypes = {
+  id: PropTypes.string.isRequired,
+  video: PropTypes.string.isRequired,
 };
 
 export default Thumbnail;

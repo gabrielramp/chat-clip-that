@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     const hls = new Hls();
     const video = videoRef.current;
-    const hlsUrl = 'https://1026fd8e9fc3.ngrok.app/stream.m3u8'; // URL to your HLS stream
+    const hlsUrl = 'https://knighthacks2024.ngrok.app/hls_stream/stream.m3u8'; // URL to your HLS stream
 
     if (Hls.isSupported()) {
       hls.loadSource(hlsUrl);
@@ -102,7 +102,7 @@ function App() {
       </div>
 
       <section className="h-[82vh] px-[14%] text-left box-border display-block mb-12">
-        <h1 className="h-[10%] text-5xl">Latest Clip/Feed</h1>
+        <h1 className="h-[10%] text-5xl">Livestream</h1>
         <video
           className="w-full h-[90%]"
           ref={videoRef}
@@ -113,8 +113,7 @@ function App() {
       </section>
 
 
-      <VideoBar id="vid1" entitle="Recently Saved" thumbs={10} />
-      <VideoBar id="vid2" entitle="Favorite Clips" thumbs={10} />
+      <VideoBar id="vid1" entitle="Clips" thumbs={10} />
 
       {/* <section id="blackout" className="w-screen h-screen absolute opacity-70 bg-black">
         asdf
