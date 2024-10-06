@@ -37,6 +37,8 @@ def send_video(sock, start_time, stop_event, sock_lock):
         # Convert to BGR (Picamera2 uses RGB by default)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
+        frame = cv2.flip(frame, 0)
+
         # Encode frame as JPEG
         result, encoded_image = cv2.imencode('.jpg', frame)
         if not result:
