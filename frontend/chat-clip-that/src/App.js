@@ -1,11 +1,39 @@
 import './App.css';
 import './tw.css';
 import './particle.scss';
-
-import React, { Component } from 'react';
+import './tw.css';
+import './particle.scss';
 import VideoBar from './components/videoBar/VideoBar';
+import Hls from 'hls.js';
+import React, { Component, useRef, useEffect } from 'react';
 
 function App() {
+
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const hls = new Hls();
+    const video = videoRef.current;
+    const hlsUrl = 'https://1026fd8e9fc3.ngrok.app/stream.m3u8'; // URL to your HLS stream
+
+    if (Hls.isSupported()) {
+      hls.loadSource(hlsUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play();
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = hlsUrl;
+      video.addEventListener('loadedmetadata', function () {
+        video.play();
+      });
+    }
+
+    return () => {
+      hls.destroy();
+    };
+  }, []);
+
   return (
     <div className="App">
       <div id="particle-container">
@@ -73,10 +101,17 @@ function App() {
         </nav>
       </div>
 
-      <section class="h-[82vh] px-[14%] text-left box-border display-block mb-12">
-        <h1 class="h-[10%] text-5xl">Latest Clip/Feed</h1>
-        <iframe class="w-full h-[90%]" src="https://www.youtube.com/embed/CBEvfZu4HE4?si=ArnPmTBNB8xagJIL" title="YouTube video player" title="YouTube video player"></iframe>
+      <section className="h-[82vh] px-[14%] text-left box-border display-block mb-12">
+        <h1 className="h-[10%] text-5xl">Latest Clip/Feed</h1>
+        <video
+          className="w-full h-[90%]"
+          ref={videoRef}
+          controls
+          autoPlay
+          muted
+        ></video>
       </section>
+
 
       <VideoBar id="vid1" entitle="Recently Saved" thumbs={10} />
       <VideoBar id="vid2" entitle="Favorite Clips" thumbs={10} />

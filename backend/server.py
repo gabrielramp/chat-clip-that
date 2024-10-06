@@ -23,7 +23,9 @@ import tempfile
 SERVER_IP = '0.0.0.0'  # Listen on all interfaces
 SERVER_PORT = 9999
 
-# Audio Playback Configuration
+FRONTEND_SERVER_IP = '0.0.0.0'  # Replace with your frontend-server's IP if different
+FRONTEND_SERVER_PORT = 8888       # Port to connect to frontend-server# Audio Playback Configuration
+
 AUDIO_RATE = 44100
 AUDIO_CHANNELS = 1
 AUDIO_FORMAT = pyaudio.paInt16
@@ -186,6 +188,12 @@ def display_video():
                     np_arr = np.frombuffer(payload, dtype=np.uint8)
                     frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
                     if frame is not None:
+                        # Send frame to frontend-server
+                        _, jpeg_frame = cv2.imencode('.jpg', frame)
+                        frame_data = jpeg_frame.tobytes()
+                        # Send frame size and data
+                        frame_size = struct.pack('!I', len(frame_data))
+                        frontend_conn.sendall(b'V' + frame_size + frame_data)
                         cv2.imshow('Received Video', frame)
                         # Append to video_deque with timestamp
                         video_deque.append((scheduled_time, frame))
@@ -425,9 +433,17 @@ def speech_to_text():
         time.sleep(PROCESS_INTERVAL)  # Adjust the sleep time as needed
 
 def main():
-    global playback_start_time
+    global playback_start_time, frontend_conn
     # Create socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        frontend_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        frontend_conn.connect((FRONTEND_SERVER_IP, FRONTEND_SERVER_PORT))
+        logging.info(f"Connected to frontend-server at {FRONTEND_SERVER_IP}:{FRONTEND_SERVER_PORT}")
+    except Exception as e:
+        logging.exception("Failed to connect to frontend-server")
+        sys.exit()    
     try:
         server_socket.bind((SERVER_IP, SERVER_PORT))
         # Server socket bound to {SERVER_IP}:{SERVER_PORT}.
