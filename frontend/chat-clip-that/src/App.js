@@ -1,4 +1,5 @@
-import './App.css';
+import './Bones.css';
+// import './Colors.css'
 import './tw.css';
 import './particle.scss';
 import './tw.css';
@@ -36,68 +37,14 @@ function App() {
 
   return (
     <div className="App">
-      <div id="particle-container">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-
-      </div>
-      <div className='h-[12vh] mt-4 mb-6'>
+      <Particulate particles={60}/>
+      <div className='h-[12vh] mt-4 mb-6' id='nav-box'>
         <nav className='flex place-content-center h-full w-[60vw] mx-auto'>
-          <a className='h-full w-1/5'><img src="./assets/cct-logo-white.png" className="w-full" /></a>
-          <a href="#vid1" className='hover:bg-white w-1/8 flex hover:text-purple-900 font-bold h-4/6 m-auto ml-1'><p className='m-auto'>Recent</p></a>
-          <a href="#vid2" className='hover:bg-white flex hover:text-purple-900 font-bold h-4/6 m-auto'><p className='m-auto'>Favorites</p></a>
-          <a href="#" className='hover:bg-white flex hover:text-purple-900 font-bold h-4/6 m-auto'><p className='m-auto'>Somethin'</p></a>
-          <a href="#" className='hover:bg-white flex hover:text-purple-900 font-bold h-4/6 m-auto'><p className='m-auto'>Somethin'</p></a>
+          <a className='h-full w-1/5'><img src="./assets/cct-logo-twitch-filled.png" className="w-full" /></a>
+          <a href="#vid1" className='navi w-1/8 flex font-bold h-4/6 m-auto ml-1'><p className='m-auto'>Recent</p></a>
+          <a href="#vid2" className='navi flex font-bold h-4/6 m-auto'><p className='m-auto'>Favorites</p></a>
+          <a href="#" className='navi flex font-bold h-4/6 m-auto'><button>Twitchy</button></a>
+          <a href="#" className='navi flex font-bold h-4/6 m-auto'><p className='m-auto'>Somethin'</p></a>
         </nav>
       </div>
 
@@ -115,12 +62,19 @@ function App() {
 
       <VideoBar id="vid1" entitle="Clips" thumbs={10} />
 
-      {/* <section id="blackout" className="w-screen h-screen absolute opacity-70 bg-black">
-        asdf
-      </section> */}
+      <section id="blackout">
+        asdffdasasdfasdf
+      </section>
 
     </div>
   );
 }
+
+// function toggleTwitch(){
+//   if(theme == 1){
+//     continue;
+//   }
+
+// }
 
 export default App;

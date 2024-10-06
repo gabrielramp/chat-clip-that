@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --dark-gray: #444444;
+    --darkest-gray: #1E1E1E;
+    --main-purple: #7D00DF;
+    --dark-purple: #320059;
+}
+
+/* Scrollbar track */
+::-webkit-scrollbar-track {
+    background: linear-gradient(135deg, #421267, #530d8a);
+}
+
+/* Scrollbar track */
+.App ::-webkit-scrollbar-track {
+    background: none !important;
+
+}
+
+/* Scroll bar itself */
+::-webkit-scrollbar-thumb {
+    background: rgba(240, 240, 240, 0.7);
+}
+
+/* Scrollbar hover */
+::-webkit-scrollbar-thumb:hover {
+    background: white;
+}
+
+
+body {
+    background: linear-gradient(135deg, var(--darkest-gray), var(--main-purple) 175%);
+    color: white;
+}
+
+a :visited {
+    color: white !important;
+}
+
+#blackout {
+    background-color: black;
+}
+
+.navi:hover {
+    background-color: white;
+    color: var(--main-purple);
+}

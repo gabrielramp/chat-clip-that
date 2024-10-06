@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --twitch-dark-gray: #0e0e10;
+  --twitch-header-gray: #18181b;
+  --twitch-lighter-gray: #1f1f23;
+
+}
+
+/* Scrollbar track */
+::-webkit-scrollbar-track {
+  background: var(--twitch-dark-gray) !important;
+}
+
+/* Scrollbar track */
+.App ::-webkit-scrollbar-track {
+  background: none !important;
+
+}
+
+/* Scroll bar itself */
+::-webkit-scrollbar-thumb {
+  background: rgba(240, 240, 240, 0.7);
+}
+
+/* Scrollbar hover */
+::-webkit-scrollbar-thumb:hover {
+  background: white;
+}
+
+
+body {
+  background: var(--twitch-dark-gray) !important;
+  color: white;
+}
+
+a :visited {
+  color: white !important;
+}
+
+#blackout {
+  background-color: black;
+}
+
+.navi:hover {
+  background-color: white;
+  color: var(--main-purple);
+}
+
+#nav-box{
+  background-color: var(--twitch-lighter-gray);
+}
+
+
+#particle-container{
+  height:20px;
+  position:absolute;
+  width:100vw;
+  background-color: var(--twitch-lighter-gray);
+  top:0px;
+  z-index: -99;
+}
