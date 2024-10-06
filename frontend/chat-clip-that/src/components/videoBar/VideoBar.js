@@ -6,23 +6,17 @@ import PropTypes from 'prop-types';
 
 const VideoBar = (props) => (
    <section>
-      <h2 class="text-left text-4xl pl-44">Aasdfasdf</h2>
-      <div className="w-ful h-[27vh] place-content-around place-items-center mb-96 flex">
-         <button onClick={() => sideScrollVidBar(props.id, true)} class="h-1/4 ml-12 w-[3.5%] rounded-full align-middle">&lt;</button>
+      <h2 class="text-left text-3xl pl-44">{props.entitle}</h2>
+      <div className="w-ful h-[27vh] place-content-around place-items-center mb-10 flex">
+         <button onClick={() => sideScrollVidBar(props.id, true)} class="h-1/4 ml-12 w-[3.5%] rounded-full align-middle font-black">&lt;</button>
          <div id={props.id} class="overflow-x-scroll w-10/12 h-full overflow-y-hidden whitespace-nowrap mx-auto flex place-items-center">
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
-            <Thumbnail />
+            {new Array(props.thumbs).fill("").map((index) => (
+               <Thumbnail id={props.id+"thumb"+index} key={(props.id.concat(index))}/>
+            ))}
+            
          </div>
          <button onClick={() => sideScrollVidBar(props.id, false)} class="h-1/4 mr-12 w-[3.5%] rounded-full align-middle">&gt;</button>
       </div>
-
    </section>
 
 );

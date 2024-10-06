@@ -8,9 +8,7 @@
   --main-purple: #7D00DF;
   --dark-purple: #320059;
 }
-html{
 
-}
 /* Scrollbar width */
 ::-webkit-scrollbar {
   width: 15px;
@@ -18,12 +16,18 @@ html{
 
 /* Scrollbar track */
 ::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0);
+  background: linear-gradient(135deg, #421267, #530d8a);
+}
+
+/* Scrollbar track */
+.App ::-webkit-scrollbar-track {
+  background: none !important;
+
 }
 
 /* Scroll bar itself */
 ::-webkit-scrollbar-thumb {
-  background: lightgray;
+  background: rgba(240,240,240,0.7);
   border-radius: 10px;
 }
 
@@ -35,6 +39,8 @@ html{
 /* Enables smooth scroll for navigation */
 html {
   scroll-behavior: smooth;
+  /* background: linear-gradient(135deg, var(--darkest-gray), var(--main-purple) 175%); */
+  /* z-index: -9999; */
 }
 
 
@@ -47,39 +53,16 @@ body {
   background-size: contain;
   background-attachment: fixed;
   height: 100vh;
-  width: 100%;
+  width: 100vw;
   color: white;
   overflow-x: hidden;
   margin: 0px;
   padding: 0px;
-  scrollbar-gutter: stable both-edges !important; 
+  right:0px;
+  /* scrollbar-gutter: stable both-edges ;  */
 }
 
-nav {
-  width: 60vw;
-  height: 7.5vh;
-  /* background-color: pink; */
-  margin-left: auto;
-  margin-right: auto;
-}
 
-nav a {
-  width: 12%;
-  height: 100%;
-  margin-left: 3.5%;
-  margin-right: 3.5%;
-  padding-left: 2%;
-  padding-right: 2%;
-  display: inline-block;
-  text-decoration: none;
-  color: white;
-  /* background-color: red; */
-}
-
-nav a :hover {
-  background-color: white;
-  color: var(--dark-purple);
-}
 
 a :visited {
   color: white !important;
@@ -91,9 +74,6 @@ a :visited {
   bottom:50%;
 }
 
-button{
-  background-color: chartreuse;
-}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
