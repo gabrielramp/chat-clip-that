@@ -292,7 +292,8 @@ def speech_to_text():
                                     for frame_time, frame in video_deque:
                                         relative_time = frame_time - playback_start_time
                                         if clip_start_time <= relative_time <= trigger_time:
-                                            frames_to_save.append((frame_time, frame))
+                                            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                                            frames_to_save.append((frame_time, frame_rgb))
 
                                 # Retrieve audio data within the last 30 seconds
                                 audio_data_to_save = []
