@@ -2,15 +2,50 @@ import './Bones.css';
 // import './Colors.css'
 import './tw.css';
 import './particle.scss';
-import './tw.css';
-import './particle.scss';
+import './App.css';
+
 import VideoBar from './components/videoBar/VideoBar';
 import Hls from 'hls.js';
-import React, { Component, useRef, useEffect } from 'react';
+import Particulate from './components/Particulate/Particulate';
+import React, { Component, useRef, useEffect, useState } from 'react';
+
+let theme = 0;
 
 function App() {
 
   const videoRef = useRef(null);
+  const [particles, setParticles] = useState(60);
+
+  const changeMessage = (newPart) => {
+    setParticles(newPart); // Update the prop
+  };
+
+  const toNormal = () => {
+    if (theme == 0)
+      return;
+    theme = 0;
+    let twitchSheet = document.getElementById('twitch-stylesheet');
+    if (twitchSheet)
+      document.head.removeChild(twitchSheet);
+    document.getElementById('logo').src = './assets/cct-logo-white.png';
+    setParticles(60);
+  }
+
+  const toTwitch = () => {
+    if (theme == 1)
+      return;
+    theme = 1;
+    console.log(window.location.pathname);
+    console.log('cool');
+    let styler = document.createElement('link');
+    styler.rel = 'stylesheet';
+    styler.href = 'Twitchy.css';
+    styler.id = 'twitch-stylesheet'; // Add an id to easily find/remove it later
+    document.head.appendChild(styler);
+    console.log('finitum');
+    document.getElementById('logo').src = './assets/cct-logo-twitch-filled.png'
+    setParticles(0);
+  }
 
   useEffect(() => {
     const hls = new Hls();
@@ -37,13 +72,13 @@ function App() {
 
   return (
     <div className="App">
-      <Particulate particles={60}/>
+      <Particulate particles={particles} />
       <div className='h-[12vh] mt-4 mb-6' id='nav-box'>
         <nav className='flex place-content-center h-full w-[60vw] mx-auto'>
-          <a className='h-full w-1/5'><img src="./assets/cct-logo-twitch-filled.png" className="w-full" /></a>
-          <a href="#vid1" className='navi w-1/8 flex font-bold h-4/6 m-auto ml-1'><p className='m-auto'>Recent</p></a>
-          <a href="#vid2" className='navi flex font-bold h-4/6 m-auto'><p className='m-auto'>Favorites</p></a>
-          <a href="#" className='navi flex font-bold h-4/6 m-auto'><button>Twitchy</button></a>
+          <a className='h-full w-1/5'><img id="logo" src="./assets/cct-logo-white.png" className="w-full" /></a>
+          <a href="#vid1" className='navi w-1/8 flex font-bold h-4/6 m-auto ml-1'><p className='m-auto'>Clips</p></a>
+          <a href="#" onClick={() => toNormal()} className='navi flex font-bold h-4/6 m-auto'><p className='m-auto'>Purple</p></a>
+          <a href="#" onClick={() => toTwitch()} className='navi flex font-bold h-4/6 m-auto'><p className='m-auto'>Twitch-like</p></a>
           <a href="#" className='navi flex font-bold h-4/6 m-auto'><p className='m-auto'>Somethin'</p></a>
         </nav>
       </div>
@@ -63,18 +98,13 @@ function App() {
       <VideoBar id="vid1" entitle="Clips" thumbs={10} />
 
       <section id="blackout">
-        asdffdasasdfasdf
+        Filler
       </section>
 
     </div>
   );
 }
 
-// function toggleTwitch(){
-//   if(theme == 1){
-//     continue;
-//   }
 
-// }
 
 export default App;
